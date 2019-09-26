@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2017-2018 gyselroth™  (http://www.gyselroth.net)
+ * Copyright (c) 2017-2019 gyselroth™  (http://www.gyselroth.net)
  *
  * @package \gyselroth\Helper
  * @author  gyselroth™  (http://www.gyselroth.com)
@@ -14,8 +14,9 @@ namespace Gyselroth\Helper;
 use Gyselroth\Helper\Exception\ReflectionException;
 use Gyselroth\Helper\Exception\ReflectionExceptionInvalidType;
 use Gyselroth\Helper\Exception\ReflectionExceptionUndefinedFunction;
+use Gyselroth\Helper\Interfaces\ConstantsDataTypesInterface;
 
-class HelperReflection
+class HelperReflection implements ConstantsDataTypesInterface
 {
     public const LOG_CATEGORY = 'reflectionhelper';
 
@@ -28,19 +29,21 @@ class HelperReflection
     public static function getTypeCasted($value, string $destinationType)
     {
         switch ($destinationType) {
-            case DataType::TYPE_ARRAY:
+            case self::DATA_TYPE_ARRAY:
                 return (array)$value;
-            case DataType::TYPE_BOOL:
+            case self::DATA_TYPE_BOOL:
                 return (bool)$value;
-            case DataType::TYPE_FLOAT:
+            case self::DATA_TYPE_FLOAT:
                 return (float)$value;
-            case DataType::TYPE_INT:
-            case DataType::TYPE_INT_SHORT:
+            case self::DATA_TYPE_INT:
+            case self::DATA_TYPE_INT_SHORT:
                 return (int)$value;
-            case DataType::TYPE_STRING:
+            case self::DATA_TYPE_STRING:
                 return (string)$value;
             default:
-                LoggerWrapper::warning("Detected unhandled type: $destinationType", [LoggerWrapper::OPT_CATEGORY => self::LOG_CATEGORY, LoggerWrapper::OPT_PARAMS => $destinationType]);
+                LoggerWrapper::warning(
+                    "Detected unhandled type: $destinationType",
+                    [LoggerWrapper::OPT_CATEGORY => self::LOG_CATEGORY, LoggerWrapper::OPT_PARAMS => $destinationType]);
                 /** @noinspection ThrowRawExceptionInspection */
                 throw new ReflectionExceptionInvalidType();
         }
@@ -58,8 +61,8 @@ class HelperReflection
             self::ensureIsClass($className);
             $object = new $className($config);
         } catch (\Exception $exception) {
-            $trace = debug_backtrace();
-            throw new ReflectionException($exception->getMessage() . ' Caller: ' . print_r($trace[1], true));
+            $trace = \debug_backtrace();
+            throw new ReflectionException($exception->getMessage() . ' Caller: ' . \print_r($trace[1], true));
         }
 
         return $object;
@@ -79,12 +82,16 @@ class HelperReflection
         if (empty($className)) {
             $exception = 'Tried to construct undefined class.';
         } else {
-            $exception = class_exists($className) ? false : "Class not defined: '$className'.";
+            $exception = \class_exists($className)
+                ? false
+                : "Class not defined: '$className'.";
         }
 
         if ($exception) {
             if ($logIfNot) {
-                LoggerWrapper::info($exception, empty($logCategory) ? null : [LoggerWrapper::OPT_CATEGORY => $logCategory]);
+                LoggerWrapper::info(
+                    $exception,
+                    empty($logCategory) ? null : [LoggerWrapper::OPT_CATEGORY => $logCategory]);
             }
 
             throw new ReflectionException($exception);
@@ -100,7 +107,10 @@ class HelperReflection
 
     public static function getActionsFromControllerFile(string $pathController): array
     {
-        preg_match_all('/(function) ([a-zA-Z]+)(Action)\(/', file_get_contents($pathController), $matches);
+        \preg_match_all(
+            '/(function) ([a-zA-Z]+)(Action)\(/',
+            \file_get_contents($pathController),
+            $matches);
 
         return $matches[2];
     }
@@ -118,14 +128,14 @@ class HelperReflection
         $funcArgs = \func_get_args();
 
         // Remove function reference
-        array_shift($funcArgs);
+        \array_shift($funcArgs);
 
         if (!self::isFunctionReference($funcRefString)) {
             throw new ReflectionExceptionUndefinedFunction($funcRefString);
         }
 
-        if (false !== strpos($funcRefString, '::')) {
-            $funcRefParts = explode('::', $funcRefString);
+        if (false !== \strpos($funcRefString, '::')) {
+            $funcRefParts = \explode('::', $funcRefString);
             $callback = $funcRefParts;
         } else {
             LoggerWrapper::info('HelperReflection::callUserFunction() called function instead of method.');
@@ -149,7 +159,7 @@ class HelperReflection
             throw new ReflectionException('Function not found: ' . $funcRefString);
         }
 
-        $funcRefParts = explode('::', $funcRefString);
+        $funcRefParts = \explode('::', $funcRefString);
 
         return \call_user_func_array($funcRefParts, $funcArgs);
     }
@@ -163,13 +173,13 @@ class HelperReflection
     public static function isFunctionReference(string $funcRefString): bool
     {
         /** @noinspection ReturnFalseInspection */
-        if (false === strpos($funcRefString, '::')) {
+        if (false === \strpos($funcRefString, '::')) {
             return \function_exists($funcRefString);
         }
 
-        $parts = explode('::', $funcRefString);
+        $parts = \explode('::', $funcRefString);
 
-        return method_exists($parts[0], $parts[1]);
+        return \method_exists($parts[0], $parts[1]);
     }
 
     /**
@@ -179,9 +189,9 @@ class HelperReflection
      */
     public static function getConstantFromPhpClassFile(string $pathPhpFilename, string $classPrefix = 'Helper')
     {
-        $className = $classPrefix . pathinfo($pathPhpFilename, PATHINFO_FILENAME);
+        $className = $classPrefix . \pathinfo($pathPhpFilename, PATHINFO_FILENAME);
         /** @noinspection ReturnFalseInspection */
-        if (false !== strpos($className, 'Mediator')) {
+        if (false !== \strpos($className, 'Mediator')) {
             return false;
         }
 
@@ -192,13 +202,18 @@ class HelperReflection
 
     public static function getCallingMethodName(bool $withClassName = true): string
     {
-        return ($withClassName ? debug_backtrace()[1]['class'] . '::' : '') . debug_backtrace()[1]['function'];
+        $previousBacktrace = \debug_backtrace()[1];
+
+        return ($withClassName
+                ? $previousBacktrace['class'] . '::'
+                : ''
+            ) . $previousBacktrace['function'];
     }
 
 
     public static function getCallee(): string
     {
-        $callee = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 3)[2];
+        $callee = \debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 3)[2];
 
         $class    = $callee['class'] ?? '';
         $function = $callee['function'] ?? '';

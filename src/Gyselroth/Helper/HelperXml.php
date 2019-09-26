@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2017-2018 gyselroth™  (http://www.gyselroth.net)
+ * Copyright (c) 2017-2019 gyselroth™  (http://www.gyselroth.net)
  *
  * @package \gyselroth\Helper
  * @author  gyselroth™  (http://www.gyselroth.com)
@@ -12,22 +12,11 @@
 namespace Gyselroth\Helper;
 
 use Gyselroth\Helper\Exception\XmlException;
+use Gyselroth\Helper\Interfaces\ConstantsXmlInterface;
 
-class HelperXml
+class HelperXml implements ConstantsXmlInterface
 {
     public const LOG_CATEGORY = 'xmlhelper';
-
-    // DOM classes
-    public const DOM_CLASS_ELEMENT   = 'DOMElement';
-    public const DOM_CLASS_NODE_LIST = 'DOMNodeList';
-
-    // XML tag types
-    public const TAG_TYPE_CLOSE    = 'close';
-    public const TAG_TYPE_COMPLETE = 'complete';
-    public const TAG_TYPE_OPEN     = 'open';
-
-    public const ENCODING_UTF_8 = 'UTF-8';
-    public const VERSION_1_0    = '1.0';
 
     /**
      * Simple XML validation
@@ -37,7 +26,7 @@ class HelperXml
      */
     public static function isValidXml(string $str): bool
     {
-        return (bool)simplexml_load_string(
+        return (bool)\simplexml_load_string(
             $str, 'SimpleXmlElement',
             LIBXML_NOERROR + LIBXML_ERR_FATAL + LIBXML_ERR_NONE);
     }
@@ -59,9 +48,12 @@ class HelperXml
     {
         $tags = self::getTagsFromXml($xml);
 
-        return [] === $excludeTagNames && [] === $excludeTagTypes && [] === $levels
-            ? $tags
-            : self::getItemsInArrayOfNodes($levels, $excludeTagNames, $excludeTagTypes, $tags);
+        return
+            [] === $excludeTagNames
+            && [] === $excludeTagTypes
+            && [] === $levels
+                ? $tags
+                : self::getItemsInArrayOfNodes($levels, $excludeTagNames, $excludeTagTypes, $tags);
     }
 
     /**
@@ -79,10 +71,14 @@ class HelperXml
     ): array
     {
         $nodesFiltered = [];
-        $excludeTagNames = array_map('strtoupper', $excludeTagNames);
+        $excludeTagNames = \array_map('strtoupper', $excludeTagNames);
         foreach ($nodes as $node) {
-            if (!\in_array($node['tag'], $excludeTagNames, true) && !\in_array($node['type'], $excludeTagTypes, true)
-                && ([] === $levels || \in_array($node['level'], $levels, true))
+            if (!\in_array($node['tag'], $excludeTagNames, true)
+                && !\in_array($node['type'], $excludeTagTypes, true)
+                && (
+                    [] === $levels
+                    || \in_array($node['level'], $levels, true)
+                )
             ) {
                 $nodesFiltered[] = $node;
             }
@@ -106,7 +102,8 @@ class HelperXml
         array $excludeTagTypes = []
     ):int
     {
-        return \count(self::getNodes($xml, $levels, $excludeTagNames, $excludeTagTypes));
+        return \count(
+            self::getNodes($xml, $levels, $excludeTagNames, $excludeTagTypes));
     }
 
     /**
@@ -123,7 +120,8 @@ class HelperXml
         $nodes
     ): int
     {
-        return \count(self::getItemsInArrayOfNodes($levels, $excludeTagNames, $excludeTagTypes, $nodes));
+        return \count(
+            self::getItemsInArrayOfNodes($levels, $excludeTagNames, $excludeTagTypes, $nodes));
     }
 
     /**
@@ -142,7 +140,10 @@ class HelperXml
     ): string
     {
         $renderErrorMessage = function($error, $message) {
-            return "<strong><br/>\n" . $message . trim($error->message) . ' on line <strong>' . $error->line . "</strong>\n</strong>: ";
+            return "<strong><br/>\n"
+                . $message
+                . \trim($error->message) . ' on line <strong>' . $error->line
+                . "</strong>\n</strong>: ";
         };
 
         switch ($error->level) {
@@ -162,7 +163,9 @@ class HelperXml
                 }
                 break;
             default:
-                LoggerWrapper::warning("Detected unhandled error-level: {$error->level}", [LoggerWrapper::OPT_CATEGORY => self::LOG_CATEGORY, LoggerWrapper::OPT_PARAMS => $error->level]);
+                LoggerWrapper::warning(
+                    "Detected unhandled error-level: {$error->level}",
+                    [LoggerWrapper::OPT_CATEGORY => self::LOG_CATEGORY, LoggerWrapper::OPT_PARAMS => $error->level]);
         }
 
         return '';
@@ -185,10 +188,10 @@ class HelperXml
         string $xmlEncoding = 'UTF-8'
     )
     {
-        if (!file_exists($pathXml)) {
+        if (!\file_exists($pathXml)) {
             throw new XmlException('Failed loading XML file: ' . $pathXml);
         }
-        if (!file_exists($pathXsd)) {
+        if (!\file_exists($pathXsd)) {
             throw new XmlException('Failed loading XSD file: ' . $pathXsd);
         }
 
@@ -248,7 +251,7 @@ class HelperXml
      */
     public static function strReplaceNodeValues(array $search, array $replace, $dom): \DOMDocument
     {
-        $xml = str_replace($search, $replace, $dom->saveXML());
+        $xml = \str_replace($search, $replace, $dom->saveXML());
 
         $xmlVersion  = $dom->version;
         $xmlEncoding = $dom->encoding;
@@ -267,14 +270,17 @@ class HelperXml
     public static function getTagsFromXml(string $xml): array
     {
         if (\function_exists('mb_convert_encoding')) {
-            $xml = mb_convert_encoding($xml, self::ENCODING_UTF_8, mb_detect_encoding($xml));
+            $xml = \mb_convert_encoding(
+                $xml,
+                self::ENCODING_UTF_8,
+                \mb_detect_encoding($xml));
         } else {
             LoggerWrapper::warning('HelperXml::getTagsFromXml() recommends installation of PHP extension: mbstring. Skipping encoding conversion for now.');
         }
 
-        $parser = xml_parser_create(self::ENCODING_UTF_8);
+        $parser = \xml_parser_create(self::ENCODING_UTF_8);
         $data   = [];
-        xml_parse_into_struct($parser, $xml, $data);
+        \xml_parse_into_struct($parser, $xml, $data);
 
         return $data;
     }
@@ -331,7 +337,9 @@ class HelperXml
 
         $previousKey = false;
         foreach ($node->children() as $key => $_) {
-            if ($previousKey !== $key && false !== $previousKey) {
+            if ($previousKey !== $key
+                && false !== $previousKey
+            ) {
                 return false;
             }
             $previousKey = $key;
@@ -353,7 +361,7 @@ class HelperXml
             if (\is_array($value)) {
                 self::arrayToXml($value, $xml->addChild($key));
             } else {
-                $xml->addChild("$key", htmlspecialchars("$value"));
+                $xml->addChild($key, \htmlspecialchars($value));
             }
         }
 

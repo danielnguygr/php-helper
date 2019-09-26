@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2017-2018 gyselroth™  (http://www.gyselroth.net)
+ * Copyright (c) 2017-2019 gyselroth™  (http://www.gyselroth.net)
  *
  * @package \gyselroth\Helper
  * @author  gyselroth™  (http://www.gyselroth.com)
@@ -11,19 +11,10 @@
 
 namespace Gyselroth\Helper;
 
-class HelperNumeric
+use Gyselroth\Helper\Interfaces\ConstantsUnitsOfDataMeasurementInterface;
+
+class HelperNumeric implements ConstantsUnitsOfDataMeasurementInterface
 {
-    // Byte sizes
-    public const BYTES_KILOBYTE    = 1024;
-    // 1 MB = 1024 * 1024 bytes
-    public const BYTES_MEGABYTE    = 1048576;
-    // 1 GB = 1024 * 1024 * 1024 bytes
-    public const BYTES_GIGABYTE    = 1073741824;
-
-    public const UNIT_BYTES     = 'B';
-    public const UNIT_KILOBYTES = 'KB';
-    public const UNIT_MEGABYTES = 'MB';
-
     /**
      * @param  int|string $number
      * @param  int        $digits
@@ -55,23 +46,25 @@ class HelperNumeric
         bool $onlyPositive = false
     ): string
     {
-        $array    = array_unique($array);
+        $array    = \array_unique($array);
         $integers = [];
 
         foreach ($array as $item) {
-            if (is_numeric($item) && (!$onlyPositive || $item > 0)) {
+            if (\is_numeric($item)
+                && (!$onlyPositive || $item > 0)
+            ) {
                 $integers[] = (int)$item;
             }
         }
 
         if ($sort) {
-            asort($integers);
+            \asort($integers);
         }
         if ($makeUnique) {
-            $integers = array_unique($integers);
+            $integers = \array_unique($integers);
         }
 
-        return implode($integers, $glue);
+        return \implode($integers, $glue);
     }
 
     /**
@@ -95,14 +88,14 @@ class HelperNumeric
         }
 
         $numbers = [];
-        $parts   = explode($delimiter, $str);
+        $parts   = \explode($delimiter, $str);
         foreach ($parts as $number) {
-            if (!$excludeNullValues || 'null' !== strtolower($number)) {
+            if (!$excludeNullValues || 'null' !== \strtolower($number)) {
                 $numbers[] = (int)$number;
             }
         }
 
-        return $unique ? array_unique($numbers) : $numbers;
+        return $unique ? \array_unique($numbers) : $numbers;
     }
 
     /**
@@ -126,14 +119,14 @@ class HelperNumeric
         }
 
         $numbers = [];
-        $parts   = explode($delimiter, $str);
+        $parts   = \explode($delimiter, $str);
         foreach ($parts as $number) {
-            if (!$excludeNullValues || 'null' !== strtolower($number)) {
+            if (!$excludeNullValues || 'null' !== \strtolower($number)) {
                 $numbers[] = (float)$number;
             }
         }
 
-        return $unique ? array_unique($numbers) : $numbers;
+        return $unique ? \array_unique($numbers) : $numbers;
     }
 
     /**
@@ -155,7 +148,7 @@ class HelperNumeric
         $kilo = $bytes / 1024;
         if ($kilo < 1000) {
             return [
-                'size' => round($kilo, 1),
+                'size' => \round($kilo, 1),
                 'unit' => self::UNIT_KILOBYTES
             ];
         }
@@ -163,8 +156,33 @@ class HelperNumeric
         $mega = $bytes / 1024000;
 
         return [
-            'size' => round($mega, 1),
+            'size' => \round($mega, 1),
             'unit' => self::UNIT_MEGABYTES
         ];
+    }
+
+    /**
+     * @param  float|int $amountFull
+     * @param  float|int $amountPartial
+     * @return float|int
+     */
+    public static function getPercentage($amountFull, $amountPartial)
+    {
+        return empty($amountFull) || $amountFull === $amountPartial
+            ? 100
+            : $amountPartial / $amountFull * 100;
+    }
+
+    /**
+     * Remove empty IDs that could cause errors
+     *
+     * @param  string $classIds
+     * @return string
+     */
+    public static function removeEmptyItemsFromIDsCsv(string $classIds): string
+    {
+        $entityIds = \array_filter(\explode(',', $classIds));
+
+        return \implode(',', $entityIds);
     }
 }

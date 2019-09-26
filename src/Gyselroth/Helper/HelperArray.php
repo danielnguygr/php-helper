@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2017-2018 gyselroth™  (http://www.gyselroth.net)
+ * Copyright (c) 2017-2019 gyselroth™  (http://www.gyselroth.net)
  *
  * @package \gyselroth\Helper
  * @author  gyselroth™  (http://www.gyselroth.com)
@@ -12,12 +12,18 @@
 namespace Gyselroth\Helper;
 
 use Gyselroth\Helper\Exception\ArrayException;
+use Gyselroth\Helper\Interfaces\ConstantsDataTypesInterface;
 
-class HelperArray
+class HelperArray implements ConstantsDataTypesInterface
 {
     public const LOG_CATEGORY = 'arrayhelper';
 
-    private const CASTABLE_TYPES = ['bool', 'float', 'int', 'string'];
+    private const CASTABLE_TYPES = [
+        self::DATA_TYPE_BOOL,
+        self::DATA_TYPE_FLOAT,
+        self::DATA_TYPE_INT_SHORT,
+        self::DATA_TYPE_STRING
+    ];
 
     /**
      * Constructor (non-public, not meant to be instantiated)
@@ -45,7 +51,7 @@ class HelperArray
 
         return $allowStringEnumeratedKeys
             ? self::hasStringKeys($array)
-            : array_keys($array) !== range(0, \count($array) - 1);
+            : \array_keys($array) !== \range(0, \count($array) - 1);
     }
 
     /**
@@ -71,12 +77,17 @@ class HelperArray
      */
     public static function isAccessible($value): bool
     {
-        return \is_array($value) || $value instanceof \ArrayAccess;
+        return \is_array($value)
+            || $value instanceof \ArrayAccess;
     }
 
     public static function hasStringKeys(array $array): bool
     {
-        return \count(array_filter(array_keys($array), 'is_string')) > 0;
+        return \count(
+            \array_filter(
+                \array_keys($array),
+                'is_string')
+            ) > 0;
     }
 
     /**
@@ -92,7 +103,7 @@ class HelperArray
     ): array
     {
         if (!\is_array($array)) {
-            if (is_numeric($array)) {
+            if (\is_numeric($array)) {
                 return [(int)$array];
             }
             return $convertNonNumericValuesToZero ? [0] : [];
@@ -100,12 +111,14 @@ class HelperArray
 
         $integers = [];
         foreach ($array as $value) {
-            if ($convertNonNumericValuesToZero || is_numeric($value)) {
+            if ($convertNonNumericValuesToZero
+                || \is_numeric($value)
+            ) {
                 $integers[] = (int)$value;
             }
         }
 
-        return $makeItemsUnique ? array_unique($integers) : $integers;
+        return $makeItemsUnique ? \array_unique($integers) : $integers;
     }
 
     /**
@@ -130,7 +143,7 @@ class HelperArray
     public static function intImplode($array, string $glue = ',', bool $makeItemsUnique = true): string
     {
         return \is_array($array)
-            ? implode($glue, self::intVal($array, $makeItemsUnique))
+            ? \implode($glue, self::intVal($array, $makeItemsUnique))
             : (int)$array;
     }
 
@@ -138,8 +151,10 @@ class HelperArray
     {
         $trimmed = [];
         foreach ($strings as $string) {
-            if (!empty($string) || $allowEmpty) {
-                $trimmed[] = trim($string);
+            if (!empty($string)
+                || $allowEmpty
+            ) {
+                $trimmed[] = \trim($string);
             }
         }
 
@@ -178,7 +193,7 @@ class HelperArray
         foreach ($array as $item) {
             if ($caseSensitive) {
                 /** @noinspection ReturnFalseInspection */
-                if (false !== strpos($item, $needleSubString)) {
+                if (false !== \strpos($item, $needleSubString)) {
                     // Found case-sensitively
                     return true;
                 }
@@ -202,7 +217,9 @@ class HelperArray
     public static function searchValueInMultidimensionalArray($expectedValue, string $expectedKey, array $array)
     {
         foreach ($array as $key => $item) {
-            if (array_key_exists($expectedKey, $item) && $item[$expectedKey] === $expectedValue) {
+            if (array_key_exists($expectedKey, $item)
+                && $item[$expectedKey] === $expectedValue
+            ) {
                 return $key;
             }
         }
@@ -294,7 +311,7 @@ class HelperArray
             if (\is_array($value)) {
                 self::replaceInKeys($search, $replace, $value);
             }
-            $key           = str_replace($search, $replace, $key);
+            $key           = \str_replace($search, $replace, $key);
             $results[$key] = $value;
         }
 
@@ -315,7 +332,9 @@ class HelperArray
             /** @noinspection TypeUnsafeComparisonInspection */
             /** @noinspection NotOptimalIfConditionsInspection */
             if (($strict ? $item === $needle : $item == $needle)
-                || (\is_array($item) && self::inArrayRecursive($needle, $item, $strict))
+                || (\is_array($item)
+                    && self::inArrayRecursive($needle, $item, $strict)
+                )
             ) {
                 return true;
             }
@@ -336,17 +355,19 @@ class HelperArray
         string $prefixGlue = '_'
     ): array
     {
-        $relatedIdsWithPrefix = \is_array($idsList) ? $idsList : explode(',', $idsList);
+        $relatedIdsWithPrefix = \is_array($idsList) ? $idsList : \explode(',', $idsList);
         $relatedIds           = [];
         foreach ($relatedIdsWithPrefix as $relatedId) {
-            $parts = explode($prefixGlue, trim($relatedId));
+            $parts = \explode($prefixGlue, \trim($relatedId));
 
-            if (empty($filterPrefix) || $parts[0] === $filterPrefix) {
+            if (empty($filterPrefix)
+                || $parts[0] === $filterPrefix
+            ) {
                 $relatedIds[] = (int)$parts[1];
             }
         }
 
-        return array_unique($relatedIds);
+        return \array_unique($relatedIds);
     }
 
     public static function removeItemsByValue(array $array, array $values): array
@@ -399,16 +420,16 @@ class HelperArray
                 }
 
                 switch ($dataTypes[$field]) {
-                    case DataType::TYPE_ARRAY_OF_INTS:
-                    case DataType::TYPE_ARRAY_OF_STRINGS:
-                        $queryResult[$index][$field] = \strlen($value) > 0 ? explode(',', $value) : [];
-                        if (DataType::TYPE_ARRAY_OF_INTS === $dataTypes[$field]) {
+                    case self::DATA_TYPE_ARRAY_OF_INTS:
+                    case self::DATA_TYPE_ARRAY_OF_STRINGS:
+                        $queryResult[$index][$field] = \strlen($value) > 0 ? \explode(',', $value) : [];
+                        if (self::DATA_TYPE_ARRAY_OF_INTS === $dataTypes[$field]) {
                             foreach ($queryResult[$index][$field] as $fieldIndex => $id) {
                                 $queryResult[$index][$field][$fieldIndex] = (int)$id;
                             }
                         }
                         break;
-                    case DataType::TYPE_INT_SHORT:
+                    case self::DATA_TYPE_INT_SHORT:
                         $queryResult[$index][$field] = (int)$value;
                         break;
                     default:
@@ -431,17 +452,17 @@ class HelperArray
         $converted = [];
         foreach ($array as $key => $value) {
             switch (strtolower($value['type'])) {
-                case DataType::TYPE_INT_SHORT:
-                case DataType::TYPE_INT:
+                case self::DATA_TYPE_INT_SHORT:
+                case self::DATA_TYPE_INT:
                     $converted[$key] = (int)$value['value'];
                     break;
-                case DataType::TYPE_STRING:
+                case self::DATA_TYPE_STRING:
                     $converted[$key] = (string)$value['value'];
                     break;
-                case DataType::TYPE_ARRAY:
+                case self::DATA_TYPE_ARRAY:
                     $converted[$key] = (array)$value['values']['value'];
                     break;
-                case DataType::TYPE_OBJECT:
+                case self::DATA_TYPE_OBJECT:
                     $converted[$key] = (object)$value['values']['value'];
                     break;
                 default:
@@ -498,7 +519,9 @@ class HelperArray
         $result = [];
 
         foreach ($array as $value) {
-            if (array_key_exists($key, $value) && !\in_array($value[$key], $tmp, true)) {
+            if (array_key_exists($key, $value)
+                && !\in_array($value[$key], $tmp, true)
+            ) {
                 $tmp[]    = $value[$key];
                 $result[] = $value;
             }
@@ -556,7 +579,7 @@ class HelperArray
         self::arrayMultidimensionalSortByKey($stringBeginsWith, $key, $sort);
         self::arrayMultidimensionalSortByKey($string, $key, $sort);
 
-        return array_merge($specialCharacter, $stringBeginsWith, $string);
+        return \array_merge($specialCharacter, $stringBeginsWith, $string);
     }
 
     /**
@@ -573,7 +596,7 @@ class HelperArray
             $keys[] = $key;
         }
 
-        return array_unique($keys);
+        return \array_unique($keys);
     }
 
     public static function addKeysToSubArray(array $array, array $keys): array
@@ -688,8 +711,14 @@ class HelperArray
             foreach ($currentArray as $currentArrayKey => $currentArrayValue) {
                 if ($arrayIndex === 0) {
                     $data[$currentArrayKey][] = $currentArrayValue;
-                } elseif ($arrayIndex === 1 && (isset($data[$currentArrayKey][0]) && !empty($data[$currentArrayKey][0]))) {
-                    $newData[$currentArrayKey] = array_merge($data[$currentArrayKey][0], $currentArrayValue);
+                } elseif (
+                    $arrayIndex === 1
+                    && (
+                        isset($data[$currentArrayKey][0])
+                        && !empty($data[$currentArrayKey][0])
+                    )
+                ) {
+                    $newData[$currentArrayKey] = \array_merge($data[$currentArrayKey][0], $currentArrayValue);
                 }
             }
             $arrayIndex++;
@@ -740,7 +769,7 @@ class HelperArray
             }
         }
 
-        return implode($glue, $csv);
+        return \implode($glue, $csv);
     }
 
     public static function getArrayFromCsvInRows(string $csv, string $delimiter = ','): array
@@ -764,7 +793,7 @@ class HelperArray
      */
     public static function substrKeys(array $array, int $start, $length = null): array
     {
-        $keys   = array_keys($array);
+        $keys   = \array_keys($array);
         $return = [];
         foreach ($keys as $key) {
             // If length is given and is 0, false or null; an empty string will be returned.
@@ -778,7 +807,7 @@ class HelperArray
     public static function strReplaceAssociative(string $string, array $replacements): string
     {
         foreach ($replacements as $search => $replace) {
-            $string = str_replace($search, $replace, $string);
+            $string = \str_replace($search, $replace, $string);
         }
 
         return $string;
@@ -796,7 +825,7 @@ class HelperArray
             $itemsWrapped[] = $wrapLhs . $item . $wrapRhs;
         }
 
-        return implode($glue, $itemsWrapped);
+        return \implode($glue, $itemsWrapped);
     }
 
     /**
@@ -831,7 +860,7 @@ class HelperArray
     {
         foreach ($needles as $needle) {
             /** @noinspection ReturnFalseInspection */
-            if (false !== strpos($haystack, $needle)) {
+            if (false !== \strpos($haystack, $needle)) {
                 return true;
             }
         }
@@ -870,20 +899,22 @@ class HelperArray
             return $array = $value;
         }
 
-        $keys = explode('.', $key);
+        $keys = \explode('.', $key);
         while (\count($keys) > 1) {
-            $key = array_shift($keys);
+            $key = \array_shift($keys);
 
             // If the key doesn't exist at this depth, we will just create an empty array to hold the next value,
             // allowing us to create the arrays to hold final values at the correct depth. Then we'll keep digging into the array.
-            if (!isset($array[$key]) || !\is_array($array[$key])) {
+            if (!isset($array[$key])
+                || !\is_array($array[$key])
+            ) {
                 $array[$key] = [];
             }
 
             $array = &$array[$key];
         }
 
-        $array[array_shift($keys)] = $value;
+        $array[\array_shift($keys)] = $value;
 
         return $array;
     }
@@ -909,8 +940,10 @@ class HelperArray
             return $array[$key];
         }
 
-        foreach (explode('.', $key) as $segment) {
-            if (!static::isAccessible($array) || !static::keyExists($array, $segment)) {
+        foreach (\explode('.', $key) as $segment) {
+            if (!static::isAccessible($array)
+                || !static::keyExists($array, $segment)
+            ) {
                 return $default instanceof \Closure ? $default() : $default;
             }
 
@@ -931,7 +964,7 @@ class HelperArray
     {
         return $array instanceof \ArrayAccess
             ? $array->offsetExists($key)
-            : array_key_exists($key, $array);
+            : \array_key_exists($key, $array);
     }
 
     /**
@@ -944,7 +977,11 @@ class HelperArray
     public static function extendArray(array $array, array $extension = []): array
     {
         foreach ($extension as $key => $value) {
-            $array[$key] = array_key_exists($key, $array) && $value !== $array[$key] ? array_merge((array)$array[$key], (array)$value) : $value;
+            $array[$key] =
+                \array_key_exists($key, $array)
+                && $value !== $array[$key]
+                    ? \array_merge((array)$array[$key], (array)$value)
+                    : $value;
         }
 
         return $array;
@@ -984,14 +1021,14 @@ class HelperArray
                 $sortedElements[$elements['sort']][$unsortedKey] = $elementsUnsorted[$unsortedKey];
             }
         }
-        ksort($sortedElements);
+        \ksort($sortedElements);
         foreach ($sortedElements as $elements) {
             foreach ($elements as $elementKey => $elementItems) {
                 $result[$elementKey] = $elementItems;
             }
         }
 
-        return \count($result) > 0 ? $result : false;
+        return [] === $result ? false : $result;
     }
 
     /**
@@ -1003,7 +1040,7 @@ class HelperArray
     public static function extractStringValues(array $arr): array
     {
         $strings = [];
-        foreach (array_values($arr) as $value) {
+        foreach (\array_values($arr) as $value) {
             if (\is_string($value)) {
                 $strings[] = $value;
             }
@@ -1022,10 +1059,12 @@ class HelperArray
      */
     public static function castSubColumn(array $array, $column, string $type = 'int'): array
     {
-        if (!\in_array($type, self::CASTABLE_TYPES)) {
+        if (!\in_array($type, self::CASTABLE_TYPES, true)) {
             return $array;
         }
-        if (!\is_array($column) && !\is_iterable($column)) {
+        if (!\is_array($column)
+            && !\is_iterable($column)
+        ) {
             $column = (array)$column;
         }
 
@@ -1040,6 +1079,97 @@ class HelperArray
     }
 
     /**
+     * Reform items of given key(s) of all sub-arrays (1 level of depth) of given array to integer
+     *
+     * @param  array        $array
+     * @param  array|string $keys Multiple keys as array | One key as string
+     * @return array
+     * @deprecated use new method castValSubItemsByKey() instead
+     */
+    public static function intValSubItemsByKey(array $array, $keys): array
+    {
+        return self::castSubColumn($array, $keys);
+    }
+
+    public static function isIterable($var): bool
+    {
+        return $var !== null
+            && (
+                \is_array($var)
+                || $var instanceof Traversable
+                || $var instanceof Iterator
+                || $var instanceof IteratorAggregate
+            );
+    }
+
+    /**
+     * Get array from (e.g. stdClass) object
+     *
+     * @param  object|array $obj
+     * @return array
+     */
+    public static function objectToArray($obj): array
+    {
+        if (\is_object($obj)) {
+            // Gets the properties of the given object
+            // with get_object_vars function
+            $obj = \get_object_vars($obj);
+        }
+
+        return \is_array($obj)
+            // Return array converted to object Using __FUNCTION__ (Magic constant) for recursive call
+            ? $obj
+            : (array)$obj;
+    }
+
+    public static function resortByDate(array &$array, string $dateColumnKey): void
+    {
+        \usort(
+            $array,
+            function ($a, $b) use ($dateColumnKey) {
+                $dateA = \DateTime::createFromFormat('d.m.Y', $a[$dateColumnKey])->format('Ymd');
+                $dateB = \DateTime::createFromFormat('d.m.Y', $b[$dateColumnKey])->format('Ymd');
+
+                return $dateA - $dateB;
+            }
+        );
+    }
+
+    public static function sanitize(
+        array &$array,
+        bool $allowCharacters = true,
+        bool $allowUmlauts = false,
+        bool $allowDigits = false,
+        bool $allowWhiteSpace = false,
+        bool $allowSpace = false,
+        string $allowedSpecialCharacters = ''
+    ): void
+    {
+        foreach ($array as &$value) {
+            if (\is_array($value)) {
+                self::sanitize(
+                    $value,
+                    $allowCharacters,
+                    $allowUmlauts,
+                    $allowDigits,
+                    $allowWhiteSpace,
+                    $allowSpace,
+                    $allowedSpecialCharacters);
+            } elseif (!HelperString::validateString(
+                $value,
+                $allowCharacters,
+                $allowUmlauts,
+                $allowDigits,
+                $allowWhiteSpace,
+                $allowSpace,
+                $allowedSpecialCharacters
+            )) {
+                $value = '';
+            }
+        }
+    }
+
+    /**
      * Extract given associative array into a "flat" array, containing just the values of the given key, of all items
      *
      * @param  array  $arr
@@ -1050,8 +1180,11 @@ class HelperArray
      */
     public static function flatten(array $arr, string $key): array
     {
-        LoggerWrapper::warning('Used deprecated HelperArray::flatten() - better: use array_column()', [LoggerWrapper::OPT_CATEGORY => self::LOG_CATEGORY]);
-        return array_column($arr, $key);
+        LoggerWrapper::warning(
+            'Used deprecated HelperArray::flatten() - better: use array_column()',
+            [LoggerWrapper::OPT_CATEGORY => self::LOG_CATEGORY]);
+
+        return \array_column($arr, $key);
     }
 
     /**
@@ -1073,18 +1206,5 @@ class HelperArray
     public static function sortElementArr(array $elements)
     {
         return self::sortElements($elements);
-    }
-
-    /**
-     * Reform items of given key(s) of all sub-arrays (1 level of depth) of given array to integer
-     *
-     * @param  array        $array
-     * @param  array|string $keys Multiple keys as array | One key as string
-     * @return array
-     * @deprecated use new method castValSubItemsByKey() instead
-     */
-    public static function intValSubItemsByKey(array $array, $keys): array
-    {
-        return self::castSubColumn($array, $keys);
     }
 }

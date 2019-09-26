@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2017-2018 gyselroth™  (http://www.gyselroth.net)
+ * Copyright (c) 2017-2019 gyselroth™  (http://www.gyselroth.net)
  *
  * @package \gyselroth\Helper
  * @author  gyselroth™  (http://www.gyselroth.com)
@@ -11,12 +11,11 @@
 
 namespace Gyselroth\Helper;
 
-class HelperJson
+use Gyselroth\Helper\Interfaces\ConstantsDataTypesInterface;
+
+class HelperJson implements ConstantsDataTypesInterface
 {
     public const LOG_CATEGORY = 'jsonHelper';
-
-    public const TYPE_OBJECT = 0;
-    public const TYPE_ARRAY  = 1;
 
     /**
      * PHP 7 wrapper for JSON decode: prevent PHP error on empty string
@@ -26,13 +25,17 @@ class HelperJson
      * @return array|Object|null
      * @throws \Exception
      */
-    public static function decode($json, $objectDecodeType = self::TYPE_ARRAY)
+    public static function decode($json, $objectDecodeType = ConstantsDataTypesInterface::TYPE_ID_ARRAY)
     {
         try {
             /** @noinspection ReturnNullInspection */
-            return empty($json) ? null : json_decode($json, self::TYPE_ARRAY === $objectDecodeType);
+            return empty($json)
+                ? null
+                : \json_decode($json, ConstantsDataTypesInterface::TYPE_ID_ARRAY === $objectDecodeType);
         } catch (\Exception $e) {
-            LoggerWrapper::warning('Cannot decode invalid JSON', [LoggerWrapper::OPT_CATEGORY => self::LOG_CATEGORY, LoggerWrapper::OPT_PARAMS => $json, 'Exception' => $e]);
+            LoggerWrapper::warning(
+                'Cannot decode invalid JSON',
+                [LoggerWrapper::OPT_CATEGORY => self::LOG_CATEGORY, LoggerWrapper::OPT_PARAMS => $json, 'Exception' => $e]);
             return null;
         }
     }
@@ -44,6 +47,15 @@ class HelperJson
     public static function ensureIsJson($str): string
     {
         /** @noinspection ReturnFalseInspection */
-        return 0 === strpos($str, '<!DOCTYPE') ? 'HTML Code (expected JSON)' : $str;
+        return 0 === \strpos($str, '<!DOCTYPE') ? 'HTML Code (expected JSON)' : $str;
+    }
+
+    /**
+     * @param  array|bool|int|null|object $value
+     * @return string
+     */
+    public static function encodePretty($value): string
+    {
+        return \json_encode($value, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) ?: '';
     }
 }
