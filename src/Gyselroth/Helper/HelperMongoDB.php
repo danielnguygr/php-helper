@@ -49,6 +49,9 @@ class HelperMongoDB
             ->storeFile($fileName, \file_get_contents($tmpFileName));
     }
 
+    // call method with filename
+    // assert to true and check if its deleted
+
     /**
      * @param  string $fileName
      * @param  bool   $doReplaceSpaceByUnderscore
@@ -64,6 +67,11 @@ class HelperMongoDB
         return (bool)(new MongoDb_Contents())
             ->removeFile($fileName);
     }
+
+    // call method with an existing file as parameter
+    // assert to true
+    // call method with a not existing file as parameter
+    // assert to false
 
     /**
      * Check if filename already exists

@@ -727,6 +727,17 @@ class HelperArray implements ConstantsDataTypesInterface
         return $newData ?: false;
     }
 
+    // call method with an array in the first parameter, second parameter the wished new key and third the old one
+    // assert every to the expected one
+    // checks:
+    // empty array
+    // empty w/o keys (not associative)                 [0,1,2]
+    // associative array not containing $oldkey         ['a'=>0, 'b'=>1, ...
+    // associative array containing $oldkey
+    // associative array already containing $newKey     !!!!!
+    //      changeKeyName([0=>1,1=>2,2=>3], 0, 1)   => [1=>1,2=>3]
+    // array that contains sub-array
+
     /**
      * Exchange given old key into given new key, recursively for all items and contained sub-arrays
      *
@@ -1031,6 +1042,18 @@ class HelperArray implements ConstantsDataTypesInterface
         return [] === $result ? false : $result;
     }
 
+    // call method with an array as parameter
+    // assert return to an array data-type inside a for-loop that repeats itself till it check all values of the array
+    // call w/:
+    //      empty array
+    //      array of ints
+    //      array of arrays
+    //      array of object
+    //      array of strings
+    //      mixed array: strings, ints
+    //      mixed array: strings, ..
+    //
+
     /**
      * Get all values of given array that are strings
      *
@@ -1041,6 +1064,7 @@ class HelperArray implements ConstantsDataTypesInterface
     {
         $strings = [];
         foreach (\array_values($arr) as $value) {
+        //foreach ($arr as $value) {
             if (\is_string($value)) {
                 $strings[] = $value;
             }
@@ -1078,19 +1102,11 @@ class HelperArray implements ConstantsDataTypesInterface
         return $array;
     }
 
-    /**
-     * Reform items of given key(s) of all sub-arrays (1 level of depth) of given array to integer
-     *
-     * @param  array        $array
-     * @param  array|string $keys Multiple keys as array | One key as string
-     * @return array
-     * @deprecated use new method castValSubItemsByKey() instead
-     */
-    public static function intValSubItemsByKey(array $array, $keys): array
-    {
-        return self::castSubColumn($array, $keys);
-    }
-
+    // call method with an iterable element as a parameter such as an array for example and assert it to true
+    //
+    // calling it with a not iterable element (simple integer)
+    // should not work and cause a failure or eventually assert it to false
+    // + pass an object of a class that implements the Iterable-interface (and one that does not)
     public static function isIterable($var): bool
     {
         return $var !== null
@@ -1102,41 +1118,41 @@ class HelperArray implements ConstantsDataTypesInterface
             );
     }
 
-    /**
-     * Get array from (e.g. stdClass) object
-     *
-     * @param  object|array $obj
-     * @return array
-     */
-    public static function objectToArray($obj): array
-    {
-        if (\is_object($obj)) {
-            // Gets the properties of the given object
-            // with get_object_vars function
-            $obj = \get_object_vars($obj);
-        }
+    // call method with an array in first parameter, in second the date column, in third whether ascending or
+    // descending sorting
+    // assert to sorted expected array
+    // test w/ $array being:
+    //      empty array
+    //      ['foo', 'bar', 'baz', 'qux']
+    //      array containing one date
+    //      array containing two identical dates
+    //      array containing two dates already in desired order
+    //      array containing two dates not in desired order
+    //      array containing three dates...
 
-        return \is_array($obj)
-            // Return array converted to object Using __FUNCTION__ (Magic constant) for recursive call
-            ? $obj
-            : (array)$obj;
-    }
-
-    public static function resortByDate(array &$array, string $dateColumnKey): void
+    public static function resortByDate(array &$array, string $dateColumnKey, bool $descending = true): void
     {
         \usort(
             $array,
-            function ($a, $b) use ($dateColumnKey) {
+            function ($a, $b) use ($dateColumnKey, $descending) {
                 $dateA = \DateTime::createFromFormat('d.m.Y', $a[$dateColumnKey])->format('Ymd');
                 $dateB = \DateTime::createFromFormat('d.m.Y', $b[$dateColumnKey])->format('Ymd');
 
-                return $dateA - $dateB;
+                return $descending
+                    ? $dateA - $dateB
+                    : $dateB - $dateA;
             }
         );
     }
 
+
+    // call function with an array you want to check in first parameter
+    // in following parameters decide which characters are allowed
+    // assert array to expected formated new array
+
+
     public static function sanitize(
-        array &$array,
+        array &$values,
         bool $allowCharacters = true,
         bool $allowUmlauts = false,
         bool $allowDigits = false,
@@ -1145,7 +1161,7 @@ class HelperArray implements ConstantsDataTypesInterface
         string $allowedSpecialCharacters = ''
     ): void
     {
-        foreach ($array as &$value) {
+        foreach ($values as &$value) {
             if (\is_array($value)) {
                 self::sanitize(
                     $value,
@@ -1167,6 +1183,19 @@ class HelperArray implements ConstantsDataTypesInterface
                 $value = '';
             }
         }
+    }
+
+    /**
+     * Reform items of given key(s) of all sub-arrays (1 level of depth) of given array to integer
+     *
+     * @param  array        $array
+     * @param  array|string $keys Multiple keys as array | One key as string
+     * @return array
+     * @deprecated use new method castValSubItemsByKey() instead
+     */
+    public static function intValSubItemsByKey(array $array, $keys): array
+    {
+        return self::castSubColumn($array, $keys);
     }
 
     /**

@@ -214,6 +214,11 @@ class HelperHtml
         return '<thead><tr>' . $cells . '</tr></thead>';
     }
 
+    // call method with a type of alignment as a string
+    // assert it to its expected value
+    // call method with anything else than a type of aligment as string
+    // assert it to the string 'left'
+
     public static function validateTextAlignValue(string $value): string
     {
         return \in_array($value, self::TEXT_ALIGN_VALUES, true)

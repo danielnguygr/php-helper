@@ -116,7 +116,7 @@ class HelperArrayTest extends HelperTestCase
         $this->assertThat(
             $result,
             new IsType('array')
-            );
+        );
         $this->assertNotEmpty($result);
         $this->assertCount(4, $result);
         $this->assertEquals(6, array_sum($result));
@@ -184,8 +184,7 @@ class HelperArrayTest extends HelperTestCase
         ];
         $this->assertSame(
             ['a' => 'ant', 'b' => 'bear', 'c' => 'chameleon', 'd' => 'dolphin', 'e' => 'elephant'],
-            HelperArray::getItemByKeyValue($array, 'e', 'elephant'))
-        ;
+            HelperArray::getItemByKeyValue($array, 'e', 'elephant'));
 
         $array = [
             '1'  => [],
@@ -937,6 +936,84 @@ class HelperArrayTest extends HelperTestCase
             new IsType('string')
         );
 
+
+    }
+
+    public function testChangeKeyName(): void
+    {
+        $emptyArray     = [];
+        $notAssociative = [0, 1, 2, 3, 4, 5];
+        $Associative    = ['eins' => 1, 'zwei' => 2, 'drei' => 3, 'vier' => 4];
+        $subArray       = [
+            'test1'=> ['eins' => 1, 'zwei' => 2],
+            'test2'=> ['drei' => 3, 'vier' => 4]
+        ];
+
+
+        $this->assertSame([],
+            HelperArray::changeKeyName($emptyArray, 3, 0));
+
+        $this->assertSame([0, 1, 2, 3, 4, 5],
+            HelperArray::changeKeyName($notAssociative, 6, 1));
+        // updated key element is at the end of the array??
+        $this->assertSame(
+            [
+                'zwei' => 2,
+                'drei' => 3,
+                'vier' => 4,
+                'fünf' => 1
+            ],
+            HelperArray::changeKeyName($Associative, 'fünf', 'eins'));
+
+        // undefined error -> maybe updated function and output Warning instead if given key is undefined in array?
+        // -> in_array
+        $this->assertNotSame(['eins' => 1, 'zwei' => 2, 'drei' => 3, 'vier' => 4],
+            HelperArray::changeKeyName($Associative, 'fünf', 'sechs'));
+
+
+        // as expected - will be overwritten -> update function
+        $this->assertSame(
+            ['eins' => 1,
+             'zwei' => 2,
+             'drei' => 3,
+             'vier' => 4
+            ],
+            HelperArray::changeKeyName($Associative, 'zwei', 'eins'));
+
+        $this->assertSame([
+            'test1'=> ['eins' => 1, 'zwei' => 2],
+            'test2'=> ['drei' => 3, 'vier' => 4]],
+            HelperArray::changeKeyName($subArray, 'fünf', 'eins'));
+
+    }
+
+    public function testExtractStringValues(): void
+    {
+
+
+        $emptyArray = [];
+        $intArray   = [1,2,3,5,345];
+        $subArray       = [
+            'test1'=> ['eins' => 1,
+            'test2'=> ['drei' => 3]]
+        ];
+        $objectArray = [(object)[$string = 'test']];
+        $stringArray = ['test', 'hallo', 'gyselroth'];
+        $mixedArrayStrInt = ['test', 1, 54, 'hey', 2342, 'eins'];
+        $mixedArrayStrSub = ['test', 'test2' =>['test3'], 'hey', 'eins', 'zwei' =>['drei']];
+
+        $this->assertSame([], HelperArray::extractStringValues($emptyArray));
+        $this->assertSame([], HelperArray::extractStringValues($intArray));
+        $this->assertSame([], HelperArray::extractStringValues($subArray));
+        $this->assertSame([], HelperArray::extractStringValues($objectArray));
+        $this->assertSame(['test', 'hallo', 'gyselroth'], HelperArray::extractStringValues($stringArray));
+        $this->assertSame(['test', 'hey', 'eins'], HelperArray::extractStringValues($mixedArrayStrInt));
+
+        // Subarrays will not be output even if they are Strings too --> add Notice / Warning or update function
+        $this->assertSame(['test', 'hey', 'eins'], HelperArray::extractStringValues($mixedArrayStrSub));
+
+    }
+    public function testResortByDate(): void {
 
     }
 }

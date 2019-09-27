@@ -91,6 +91,11 @@ class HelperImage
         return $encoded;
     }
 
+    // call method with width and height in the first two parameter, third parameter - savingpath
+    // assert to true
+    // assert to expected path
+    // assert to given width/height
+
     public static function saveTransparentImage(int $width, int $height, string $filePath): bool
     {
         $image = \imagecreatetruecolor($width, $height);
@@ -102,6 +107,14 @@ class HelperImage
         return \imagepng($image, $filePath);
     }
 
+    // call method with an existing Image-file in the first parameter
+    //      in the second parameter the widthSubtrahend and in the third the heightSubtrahend
+    // assert to true
+    // (any assertion to check size? eventually possible to add one?
+
+    // call method with a non existing Image-file in the first parameter
+    //      in the second parameter the widthSubtrahend and in the third the heightSubtrahend
+    // assert to false
     /**
      * @param string $imageFilename
      * @param int $widthSubtrahend

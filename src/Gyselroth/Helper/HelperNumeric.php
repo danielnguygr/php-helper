@@ -161,6 +161,10 @@ class HelperNumeric implements ConstantsUnitsOfDataMeasurementInterface
         ];
     }
 
+    // call method with 0 / '' / '0' / NULL / false / [] as the first parameter
+    // assert it to the value of '100'
+    // call method with integers or floats
+    // assert it to its expected value
     /**
      * @param  float|int $amountFull
      * @param  float|int $amountPartial
@@ -173,16 +177,19 @@ class HelperNumeric implements ConstantsUnitsOfDataMeasurementInterface
             : $amountPartial / $amountFull * 100;
     }
 
+
+
+
     /**
      * Remove empty IDs that could cause errors
      *
-     * @param  string $classIds
+     * @param  string $idsCsv
      * @return string
      */
-    public static function removeEmptyItemsFromIDsCsv(string $classIds): string
+    public static function removeEmptyItemsFromIDsCsv(string $idsCsv): string
     {
-        $entityIds = \array_filter(\explode(',', $classIds));
+        $ids = \array_filter(\explode(',', $idsCsv));
 
-        return \implode(',', $entityIds);
+        return \implode(',', $ids);
     }
 }

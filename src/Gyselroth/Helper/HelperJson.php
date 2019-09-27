@@ -50,6 +50,9 @@ class HelperJson implements ConstantsDataTypesInterface
         return 0 === \strpos($str, '<!DOCTYPE') ? 'HTML Code (expected JSON)' : $str;
     }
 
+
+
+
     /**
      * @param  array|bool|int|null|object $value
      * @return string

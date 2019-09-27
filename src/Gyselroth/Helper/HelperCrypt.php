@@ -116,6 +116,7 @@ class HelperCrypt
      * @param  bool                               $compressed
      * @return string encrypted data
      */
+
     public static function createToken($data, $compressed = true): string
     {
         $string = $compressed

@@ -13,10 +13,13 @@ namespace Gyselroth\Helper;
 
 use Gyselroth\Helper\Exception\PregExceptionEmptyExpression;
 use Gyselroth\Helper\Interfaces\ConstantsDataTypesInterface;
+use Gyselroth\Helper\Interfaces\ConstantsOperatorsInterface;
 
-class HelperString implements ConstantsDataTypesInterface
+class HelperString implements ConstantsDataTypesInterface, ConstantsOperatorsInterface
 {
     public const LOG_CATEGORY = 'stringHelper';
+
+    public static $UMLAUTS = ['ä', 'ö', 'ü', 'Ä', 'Ö', 'Ü', 'ß'];
 
     // Character classes
     public const CHAR_TYPE_ALPHA_LOWER = 0;
@@ -287,6 +290,11 @@ class HelperString implements ConstantsDataTypesInterface
     {
         return \str_replace(["\n", "\r", "'"], ['', '', '"'], $string);
     }
+
+    // call method with a xml file
+    // assert to true
+    // call method with any other type of file
+    // assert to false
 
     public static function isXml(string $str): bool
     {
@@ -793,5 +801,43 @@ class HelperString implements ConstantsDataTypesInterface
     public static function isDate(string $str, string $delimiter = '.', bool $isGermanNotation = true): bool
     {
         return HelperDate::isDateString($str, $delimiter, $isGermanNotation);
+    }
+
+    // call function with a string you want to check in first parameter
+    // in following parameters decide which characters are allowed
+    // assert string to expected formated new String
+
+    public static function validateString(
+        string $str,
+        bool $allowCharacters = true,
+        bool $allowUmlauts = false,
+        bool $allowDigits = false,
+        bool $allowWhiteSpace = false,
+        bool $allowSpace = false,
+        string $allowedSpecialCharacters = ''
+    ): bool
+    {
+        $regExpression = '';
+        if ($allowCharacters) {
+            $regExpression .= 'A-Za-z';
+        }
+        if ($allowDigits) {
+            $regExpression .= '0-9';
+        }
+
+        if ($allowWhiteSpace) {
+            $regExpression .= '\s';
+        } elseif ($allowSpace) {
+            $regExpression .= ' ';
+        }
+
+        if ($allowUmlauts) {
+            $regExpression .= \implode('', self::$UMLAUTS);
+        }
+        if ('' !== $allowedSpecialCharacters) {
+            $regExpression .= $allowedSpecialCharacters;
+        }
+
+        return (bool)\preg_match('/[' . $regExpression . ']+/', $str);
     }
 }

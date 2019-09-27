@@ -415,6 +415,7 @@ class HelperDate implements ConstantsUnitsOfTimeInterface
         return $parts['minutes'] + $parts[self::DATE_TIME_PART_HOUR] * self::SECONDS_MIN;
     }
 
+
     /**
      * If timestamp of given date is within a weekend: increment timestamp until at 1st day of next week
      *
@@ -683,6 +684,9 @@ class HelperDate implements ConstantsUnitsOfTimeInterface
         return \strtotime($year . 'W' . HelperNumeric::formatAmountDigits($weekNumber, 2));
     }
 
+    // call method with birthyear in parameter
+    // assert to the persons age (might be wrong if the person has not had his birthday yet this year)
+
     /**
      * @param  string|int $year 4-digit year
      * @return bool|string
@@ -793,7 +797,7 @@ class HelperDate implements ConstantsUnitsOfTimeInterface
         $dateEnd   = new \Zend_Date(self::getDateFromUnixTimestamp($dateEnd), \Zend_Date::ISO_8601, $locale);
 
 //        return $dateStart->get(\Zend_Date::DATE_LONG) . ' ' . Zend_Registry::get('Zend_Translate')->translate('bis') . ' ' . $dateEnd->get(Zend_Date::DATE_LONG);
-        return $dateStart->get(\Zend_Date::DATE_LONG) . ' ' . 'bis' . ' ' . $dateEnd->get(\Zend_Date::DATE_LONG);
+        return $dateStart->get(\Zend_Date::DATE_LONG) . ' ' . HelperString::translate('bis') . ' ' . $dateEnd->get(\Zend_Date::DATE_LONG);
     }
 
     /**
@@ -874,6 +878,9 @@ class HelperDate implements ConstantsUnitsOfTimeInterface
         }
     }
 
+    // call method with Time and date in the parameter
+    // format Time(always 5 characters -> 00:00) Year.Month.Day
+    // assert to the give Time in the parameter
     /**
      * @param  string $dateStr
      * @return string           E.g. "12:30" out of "12:30 2017.12.31"
@@ -886,10 +893,19 @@ class HelperDate implements ConstantsUnitsOfTimeInterface
     /**
      * @return bool|string
      */
+    // call method
+    // assert to current week and year in format of f.E.: 43 / 2019
+
     public static function getCurrentWeekAndYear()
     {
         return \date('W / Y');
     }
+
+
+    // call method with a date as parameter
+    // at least one time with a sunday as date
+    // asserting it to 7
+    // additionally do the same with any other day asserting to its suiting day number of week
 
     public static function getDayNumberOfWeekFromZendDate(\Zend_Date $date): int
     {
@@ -905,6 +921,10 @@ class HelperDate implements ConstantsUnitsOfTimeInterface
      * @throws Zend_Date_Exception
      * @throws \Zend_Date_Exception
      */
+    // call method with date as parameter and how much days to add
+    // if after adding the days the result would be a weekendday then assert it to true
+    // if not then assert it to false
+
     public static function passesWeekend(\Zend_Date $date, int $addDays): bool
     {
         $tempDate = clone $date;
@@ -918,6 +938,9 @@ class HelperDate implements ConstantsUnitsOfTimeInterface
 
         return false;
     }
+
+    // call method with start/end time/date for the first parameter and for the second parameter a different one
+    // if its overlapping then assert to false - else to true
 
     /**
      * @param string $start1 e.g. '07:45'
@@ -936,6 +959,11 @@ class HelperDate implements ConstantsUnitsOfTimeInterface
      * @param string $timeSpan E.g.: '07:45 - 08:30'
      * @return bool
      */
+    // call method with a timespan
+    // assert it to true
+    // call method with sth different than a timespan
+    // assert it to false
+
     public static function isTimeSpan(string $timeSpan): bool
     {
         \preg_match('/[\d]+:[\d]+ - [\d]+:[\d]+/', $timeSpan, $matches);

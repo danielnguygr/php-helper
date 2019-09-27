@@ -183,6 +183,9 @@ class HelperServerClient implements ConstantsHttpInterface
         return $matches;
     }
 
+    // call method and assert to false -> will not be mobile anyway
+    // how to test whether it would work on mobile device?
+
     public static function isMobileDevice(): bool
     {
         return \preg_match(
