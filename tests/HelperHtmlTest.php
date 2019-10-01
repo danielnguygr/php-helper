@@ -38,7 +38,7 @@ class HelperHtmlTest extends HelperTestCase
         $this->assertSame(
             'This is a test link <a href="https://test.com/Test" target="_blank">https://test.com/Test</a> with text afterwards. See <a href="http://Further.information" target="_blank">http://Further.information</a> ',
             HelperHtml::urlsToHyperlinks('This is a test link https://test.com/Test with text afterwards. See http://Further.information'
-        ));
+            ));
     }
 
     public function testStripHtmlTags(): void
@@ -46,7 +46,7 @@ class HelperHtmlTest extends HelperTestCase
         $this->assertSame(
             "As\n ndfghdf  gsg5eas\n\n - Aasd\n - Obflk",
             HelperHtml::stripHtmlTags('<p>As<br> ndfghdf  <a href="/02gas" title="P">gsg5e</a><sup id="dfsg" class="hd">as</sup></p><ul><li>Aasd</li><li>Obflk</li></ul>'
-        ));
+            ));
     }
 
     public function testHtml2plaintext(): void
@@ -54,7 +54,7 @@ class HelperHtmlTest extends HelperTestCase
         $this->assertSame(
             "As\n ndfghdf gsg5eas\n - Aasd\n - Obflk",
             HelperHtml::html2plaintext('<p>As<br> ndfghdf  <a href="/02gas" title="P">gsg5e</a><sup id="dfsg" class="hd">as</sup></p><ul><li>Aasd</li><li>Obflk</li></ul>'
-        ));
+            ));
     }
 
     public function testResizeStyles(): void
@@ -84,12 +84,12 @@ class HelperHtmlTest extends HelperTestCase
 
     public function testFormatArrayDump(): void
     {
-        $array = [
+        $array     = [
             'key1' => 'value1',
             'key2' => 'value2',
             'key3' => 'value3',
         ];
-$cleanDump = 'array(
+        $cleanDump = 'array(
     [key1] => value1
     [key2] => value2
     [key3] => value3
@@ -106,4 +106,20 @@ $cleanDump = 'array(
         $th = ['row1', 'row2', 'row3'];
         $this->assertSame('<thead><tr><th>row1</th><th>row2</th><th>row3</th></tr></thead>', HelperHtml::renderTableHead($th));
     }
+
+    public function testValidateTextAlignValue(): void
+    {
+        $isTextAlign = 'center';
+        $isWrongFormatTextAlign = 'Center';
+        $isNotTextAlign = 'Middle';
+
+        $this->assertSame('center', HelperHtml::validateTextAlignValue($isTextAlign));
+        // has to be written EXACTLY the same way - update function so it accepts the same word in any kind of format
+        // or add notice
+        $this->assertSame('center', HelperHtml::validateTextAlignValue($isWrongFormatTextAlign));
+        $this->assertSame('left', HelperHtml::validateTextAlignValue($isNotTextAlign));
+
+
+    }
+
 }

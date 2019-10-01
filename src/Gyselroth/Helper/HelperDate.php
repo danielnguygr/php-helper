@@ -885,7 +885,7 @@ class HelperDate implements ConstantsUnitsOfTimeInterface
      * @param  string $dateStr
      * @return string           E.g. "12:30" out of "12:30 2017.12.31"
      */
-    public static function getTimeOutOfTimeDateString($dateStr): string
+    public static function getTimeOutOfTimeDateString(string $dateStr): string
     {
         return \substr($dateStr, 0, 5);
     }

@@ -45,8 +45,8 @@ class HelperDateTest extends HelperTestCase
     public function testGetCurrentDate(): void
     {
         $weekdays = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
-        $months = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
-        $locale = new \Zend_Locale();
+        $months   = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+        $locale   = new \Zend_Locale();
         if ($locale->getLanguage() === 'de') {
             $string = $weekdays[date('w')] . ', ' . date('d.') . ' ' . $months[date('n') - 1] . ' ' . date('Y');
         } else {
@@ -63,7 +63,7 @@ class HelperDateTest extends HelperTestCase
     {
         // Test: convert date-string to UNIX timestamp
         $dateString = '2015-12-31';
-        $result = HelperDate::getUnixTimestampFromDate($dateString);
+        $result     = HelperDate::getUnixTimestampFromDate($dateString);
         $this->assertThat(
             $result,
             new IsType('int')
@@ -73,7 +73,7 @@ class HelperDateTest extends HelperTestCase
 
         // Test: convert dateTime-string to UNIX timestamp
         $dateString = '2015-12-31 12:30:00';
-        $result = HelperDate::getUnixTimestampFromDate($dateString);
+        $result     = HelperDate::getUnixTimestampFromDate($dateString);
         $this->assertThat(
             $result,
             new IsType('int')
@@ -82,7 +82,7 @@ class HelperDateTest extends HelperTestCase
         $this->assertEquals(strtotime($dateString), $result);
 
         // Test: convert Zend object to UNIX timestamp
-        $date = new Zend_Date();
+        $date      = new Zend_Date();
         $timestamp = $date->toValue();
         $this->assertSame($timestamp, HelperDate::getUnixTimestampFromDate($date));
     }
@@ -162,32 +162,32 @@ class HelperDateTest extends HelperTestCase
     {
         $this->assertEquals('44420',
             HelperDate::getSumSecondsOfTimeParts([
-            'hour'    => '12',
-            'minutes' => '20',
-            'seconds' => '20'
-        ]));
+                'hour'    => '12',
+                'minutes' => '20',
+                'seconds' => '20'
+            ]));
         $this->assertEquals(44420 + strtotime('today'),
             HelperDate::getSumSecondsOfTimeParts([
-            'hour'    => '12',
-            'minutes' => '20',
-            'seconds' => '20'
-        ], true));
+                'hour'    => '12',
+                'minutes' => '20',
+                'seconds' => '20'
+            ], true));
     }
 
     public function testGetSumMinutesOfTimeParts(): void
     {
         $this->assertEquals('740',
             round(HelperDate::getSumMinutesOfTimeParts([
-            'hour'    => '12',
-            'minutes' => '20',
-            'seconds' => '20'
-        ])));
+                'hour'    => '12',
+                'minutes' => '20',
+                'seconds' => '20'
+            ])));
         $this->assertEquals(round((44420 + strtotime('today')) / 60),
             round(HelperDate::getSumMinutesOfTimeParts([
-            'hour'    => '12',
-            'minutes' => '20',
-            'seconds' => '20'
-        ], true)));
+                'hour'    => '12',
+                'minutes' => '20',
+                'seconds' => '20'
+            ], true)));
     }
 
     public function testGetSumSecondsOfTimeString(): void
@@ -367,4 +367,266 @@ class HelperDateTest extends HelperTestCase
     {
         $this->markTestSkipped('The function needed to test is identical');
     }
+
+    public function testGetTimeOutOfTimeDateString(): void
+    {
+        $emptyString            = '';
+        $correctTimeDateOrder   = '08:20 2019.09.30';
+        $incorrectTimeDateOrder = '2019.09.30, 08:20';
+        $noTime                 = 'hello test';
+
+        $this->assertSame('08:20', HelperDate::getTimeOutOfTimeDateString($correctTimeDateOrder));
+
+        // will not asserted as same - implement notice/warning if the first 5 characters are not a time
+        // or update function that it will always find the time in a String
+        $this->assertSame('08:20', HelperDate::getTimeOutOfTimeDateString($incorrectTimeDateOrder));
+
+        // will output hello  even though it is not a time
+        // update function that it will return a warning instead such as 'Given String is not a time'
+        $this->assertSame('Given String is not a time', HelperDate::getTimeOutOfTimeDateString($noTime));
+
+        // will out put empty String
+        // eventually add a warning here as well
+        $this->assertSame('', HelperDate::getTimeOutOfTimeDateString($emptyString));
+    }
+
+    public function testGetDayNumberOfWeekFromZendDateWithMonday(): void
+    {
+        $this->assertSame(1, HelperDate::getDayNumberOfWeekFromZendDate(new Zend_Date('23.09.2019')));
+    }
+
+    public function testGetDayNumberOfWeekFromZendDateWithTuesday(): void
+    {
+        $this->assertSame(2, HelperDate::getDayNumberOfWeekFromZendDate(new Zend_Date('24.09.2019')));
+    }
+
+    public function testGetDayNumberOfWeekFromZendDateWithWednesday(): void
+    {
+        $this->assertSame(3, HelperDate::getDayNumberOfWeekFromZendDate(new Zend_Date('25.09.2019')));
+    }
+
+    public function testGetDayNumberOfWeekFromZendDateWithThursday(): void
+    {
+        $this->assertSame(4, HelperDate::getDayNumberOfWeekFromZendDate(new Zend_Date('26.09.2019')));
+    }
+
+    public function testGetDayNumberOfWeekFromZendDateWithFriday(): void
+    {
+        $this->assertSame(5, HelperDate::getDayNumberOfWeekFromZendDate(new Zend_Date('27.09.2019')));
+    }
+
+    public function testGetDayNumberOfWeekFromZendDateWithSaturday(): void
+    {
+        $this->assertSame(6, HelperDate::getDayNumberOfWeekFromZendDate(new Zend_Date('28.09.2019')));
+    }
+
+    public function testGetDayNumberOfWeekFromZendDateWithSunday(): void
+    {
+        $this->assertSame(7, HelperDate::getDayNumberOfWeekFromZendDate(new Zend_Date('29.09.2019')));
+    }
+
+    public function testPassesWeekendMonday(): void
+    {
+        $this->assertFalse(HelperDate::passesWeekend(new Zend_Date('23.09.2019'), 1));
+        $this->assertFalse(HelperDate::passesWeekend(new Zend_Date('23.09.2019'), 2));
+        $this->assertFalse(HelperDate::passesWeekend(new Zend_Date('23.09.2019'), 3));
+        $this->assertFalse(HelperDate::passesWeekend(new Zend_Date('23.09.2019'), 4));
+        $this->assertTrue(HelperDate::passesWeekend(new Zend_Date('23.09.2019'), 5));
+        $this->assertTrue(HelperDate::passesWeekend(new Zend_Date('23.09.2019'), 6));
+        $this->assertTrue(HelperDate::passesWeekend(new Zend_Date('23.09.2019'), 7));
+
+    }
+
+    public function testPassesWeekendTuesday(): void
+    {
+        $this->assertFalse(HelperDate::passesWeekend(new Zend_Date('24.09.2019'), 1));
+        $this->assertFalse(HelperDate::passesWeekend(new Zend_Date('24.09.2019'), 2));
+        $this->assertFalse(HelperDate::passesWeekend(new Zend_Date('24.09.2019'), 3));
+        $this->assertTrue(HelperDate::passesWeekend(new Zend_Date('24.09.2019'), 4));
+        $this->assertTrue(HelperDate::passesWeekend(new Zend_Date('24.09.2019'), 5));
+        $this->assertTrue(HelperDate::passesWeekend(new Zend_Date('24.09.2019'), 6));
+
+    }
+
+    public function testPassesWeekendWednesday(): void
+    {
+        $this->assertFalse(HelperDate::passesWeekend(new Zend_Date('25.09.2019'), 1));
+        $this->assertFalse(HelperDate::passesWeekend(new Zend_Date('25.09.2019'), 2));
+        $this->assertTrue(HelperDate::passesWeekend(new Zend_Date('25.09.2019'), 3));
+        $this->assertTrue(HelperDate::passesWeekend(new Zend_Date('25.09.2019'), 4));
+        $this->assertTrue(HelperDate::passesWeekend(new Zend_Date('25.09.2019'), 5));
+
+    }
+
+    public function testPassesWeekendThursday(): void
+    {
+        $this->assertFalse(HelperDate::passesWeekend(new Zend_Date('26.09.2019'), 1));
+        $this->assertTrue(HelperDate::passesWeekend(new Zend_Date('26.09.2019'), 2));
+        $this->assertTrue(HelperDate::passesWeekend(new Zend_Date('26.09.2019'), 3));
+        $this->assertTrue(HelperDate::passesWeekend(new Zend_Date('26.09.2019'), 4));
+    }
+
+    public function testPassesWeekendFriday(): void
+    {
+        $this->assertTrue(HelperDate::passesWeekend(new Zend_Date('27.09.2019'), 1));
+        $this->assertTrue(HelperDate::passesWeekend(new Zend_Date('27.09.2019'), 2));
+        $this->assertTrue(HelperDate::passesWeekend(new Zend_Date('27.09.2019'), 3));
+    }
+
+    public function testPassesWeekendSaturday(): void
+    {
+        $this->assertTrue(HelperDate::passesWeekend(new Zend_Date('28.09.2019'), 1));
+        $this->assertTrue(HelperDate::passesWeekend(new Zend_Date('28.09.2019'), 2));
+
+    }
+
+    public function testPassesWeekendSunday(): void
+    {
+        // expected to be false?
+        $this->assertTrue(HelperDate::passesWeekend(new Zend_Date('29.09.2019'), 1));
+    }
+
+    public function testTimeSpansIntersect(): void
+    {
+        $notOverlappingStartTime1 = '07:45';
+        $notOverlappingEndTime1   = '08:30';
+        $notOverlappingStartTime2 = '09:45';
+        $notOverlappingEndTime2   = '10:30';
+
+        $OverlappingStartTime1 = '07:45';
+        $OverlappingEndTime1   = '08:30';
+        $OverlappingStartTime2 = '08:00';
+        $OverlappingEndTime2   = '10:30';
+
+        $StartTime1 = '07:45';
+        $EndTime1   = '08:30';
+        $StartTime2 = '08:30';
+        $EndTime2   = '10:30';
+
+
+        $this->assertTrue(HelperDate::timeSpansIntersect
+            (
+                $notOverlappingStartTime1,
+                $notOverlappingEndTime1,
+                $notOverlappingStartTime2,
+                $notOverlappingEndTime2
+            )
+        );
+
+        $this->assertFalse(HelperDate::timeSpansIntersect
+            (
+                $OverlappingStartTime1,
+                $OverlappingEndTime1,
+                $OverlappingStartTime2,
+                $OverlappingEndTime2
+            )
+        );
+
+        // should it be considered as overlapping or not???
+        $this->assertFalse(HelperDate::timeSpansIntersect
+            (
+                $StartTime1,
+                $EndTime1,
+                $StartTime2,
+                $EndTime2
+            )
+        );
+    }
+
+    public function testIsTimeSpan(): void
+    {
+        $isTimeSpan = '07:45 - 08:30';
+        $isWrongFormatTimeSpan = '07:45-08:30';
+        $isNotTimeSpan = '07:45';
+
+        $this->assertTrue(HelperDate::isTimeSpan($isTimeSpan));
+
+        // is actually a timespan but the format is not the same
+        // eventually add more possibilities - such as no space here or instead of '-' 'bis'...
+        $this->assertFalse(HelperDate::isTimeSpan($isWrongFormatTimeSpan));
+        $this->assertFalse(HelperDate::isTimeSpan($isNotTimeSpan));
+
+
+    }
+
+    public function testIsDateStringFormattedTrue(): void
+    {
+        $this->assertTrue( HelperDate::isDateStringFormatted(
+            '17.09.2019',
+            2,
+            2,
+            4,
+            '.'
+        ));
+    }
+
+    public function testIsDateStringFormattedFalse(): void
+    {
+        $this->assertFalse( HelperDate::isDateStringFormatted(
+            '17.09.2019',
+            4,
+            2,
+            2,
+            '.'
+        ));
+        $this->assertFalse( HelperDate::isDateStringFormatted(
+            '17.09.2019',
+            2,
+            2,
+            4
+        ));
+        $this->assertFalse( HelperDate::isDateStringFormatted(
+            '17.09.2019',
+            2,
+            2,
+            5
+        ));
+    }
+
+
+    public function testSkipWeekendSaturday(): void
+    {
+        $this->assertEquals(new Zend_Date('30.09.2019'),
+            HelperDate::skipWeekend(new Zend_Date('28.09.2019'),
+                false,
+                false));
+
+        $this->assertEquals(new Zend_Date('29.09.2019'),
+            HelperDate::skipWeekend(new Zend_Date('28.09.2019'),
+                false,
+                true));
+
+        $this->assertEquals(new Zend_Date('28.09.2019'),
+            HelperDate::skipWeekend(new Zend_Date('28.09.2019'),
+                true,
+                true));
+        $this->assertEquals(new Zend_Date('28.09.2019'),
+            HelperDate::skipWeekend(new Zend_Date('28.09.2019'),
+                true,
+                false));
+
+
+    }
+
+    public function testSkipWeekendSunday(): void
+    {
+        $this->assertEquals(new Zend_Date('30.09.2019'),
+            HelperDate::skipWeekend(new Zend_Date('29.09.2019'),
+                false,
+                false));
+        $this->assertEquals(new Zend_Date('30.09.2019'),
+            HelperDate::skipWeekend(new Zend_Date('29.09.2019'),
+                true,
+                false));
+
+        $this->assertEquals(new Zend_Date('29.09.2019'),
+            HelperDate::skipWeekend(new Zend_Date('29.09.2019'),
+                false,
+                true));
+        $this->assertEquals(new Zend_Date('29.09.2019'),
+            HelperDate::skipWeekend(new Zend_Date('29.09.2019'),
+                true,
+                true));
+    }
+
 }

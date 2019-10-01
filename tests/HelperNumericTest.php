@@ -63,4 +63,42 @@ class HelperNumericTest extends HelperTestCase
         $this->assertSame(json_encode(HelperNumeric::calcBytesSize(1150)), '{"size":1.1,"unit":"KB"}');
         $this->assertSame(json_encode(HelperNumeric::calcBytesSize(4500000)), '{"size":4.4,"unit":"MB"}');
     }
+
+    public function testGetPercentage(): void
+    {
+        $empty                  = 0;
+        $amountFull             = 125;
+        $amountPartialEqualFull = 125;
+        $amountPartial          = 70;
+
+        $amountFullFloat             = 107.2;
+        $amountPartialEqualFullFloat = 107.2;
+        $amountPartialFloat          = 45.7;
+
+        assertSame(56, HelperNumeric::getPercentage($amountFull, $amountPartial));
+        assertSame(100, HelperNumeric::getPercentage($empty, $amountPartial));
+        assertSame(100, HelperNumeric::getPercentage($amountFull, $amountPartialEqualFull));
+
+        assertSame(42.630597, HelperNumeric::getPercentage($amountFullFloat, $amountPartialFloat));
+        assertSame(100, HelperNumeric::getPercentage($amountFullFloat, $amountPartialEqualFullFloat));
+
+
+    }
+
+    public function testRemoveEmptyItemsFromIDsCsv(): void
+    {
+        $nothingToRemove = 'Das, ist, Ein, Test';
+        $removeSpaces = 'Hier, , müssen, Dinge, , entfernt, , werden';
+        $remove = 'Hier,, müssen, Dinge,, entfernt,, werden';
+
+        $this->assertSame('Das, ist, Ein, Test', HelperNumeric::removeEmptyItemsFromIDsCsv($nothingToRemove));
+        $this->assertSame('Hier, müssen, Dinge, entfernt, werden', HelperNumeric::removeEmptyItemsFromIDsCsv($remove));
+
+        // really only works if it is empty - characters such as spaces will not be removed
+        // eventually update function or add notice
+        $this->assertSame('Hier, müssen, Dinge, entfernt, werden', HelperNumeric::removeEmptyItemsFromIDsCsv($removeSpaces));
+
+
+    }
+
 }

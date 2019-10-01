@@ -805,7 +805,7 @@ class HelperString implements ConstantsDataTypesInterface, ConstantsOperatorsInt
 
     // call function with a string you want to check in first parameter
     // in following parameters decide which characters are allowed
-    // assert string to expected formated new String
+    // assert string to true
 
     public static function validateString(
         string $str,

@@ -945,16 +945,18 @@ class HelperArrayTest extends HelperTestCase
         $notAssociative = [0, 1, 2, 3, 4, 5];
         $Associative    = ['eins' => 1, 'zwei' => 2, 'drei' => 3, 'vier' => 4];
         $subArray       = [
-            'test1'=> ['eins' => 1, 'zwei' => 2],
-            'test2'=> ['drei' => 3, 'vier' => 4]
+            'test1' => ['eins' => 1, 'zwei' => 2],
+            'test2' => ['drei' => 3, 'vier' => 4]
         ];
 
 
         $this->assertSame([],
             HelperArray::changeKeyName($emptyArray, 3, 0));
 
+        // still has key - treat expectations as if they were associated or really expecting no changes?
         $this->assertSame([0, 1, 2, 3, 4, 5],
             HelperArray::changeKeyName($notAssociative, 6, 1));
+
         // updated key element is at the end of the array??
         $this->assertSame(
             [
@@ -980,9 +982,10 @@ class HelperArrayTest extends HelperTestCase
             ],
             HelperArray::changeKeyName($Associative, 'zwei', 'eins'));
 
+        // can't find key --> does not check subarrays -> update in function or???
         $this->assertSame([
-            'test1'=> ['eins' => 1, 'zwei' => 2],
-            'test2'=> ['drei' => 3, 'vier' => 4]],
+            'test1' => ['eins' => 1, 'zwei' => 2],
+            'test2' => ['drei' => 3, 'vier' => 4]],
             HelperArray::changeKeyName($subArray, 'fünf', 'eins'));
 
     }
@@ -991,16 +994,16 @@ class HelperArrayTest extends HelperTestCase
     {
 
 
-        $emptyArray = [];
-        $intArray   = [1,2,3,5,345];
-        $subArray       = [
-            'test1'=> ['eins' => 1,
-            'test2'=> ['drei' => 3]]
+        $emptyArray       = [];
+        $intArray         = [1, 2, 3, 5, 345];
+        $subArray         = [
+            'test1' => ['eins'  => 1,
+                        'test2' => ['drei' => 3]]
         ];
-        $objectArray = [(object)[$string = 'test']];
-        $stringArray = ['test', 'hallo', 'gyselroth'];
+        $objectArray      = [(object)[$string = 'test']];
+        $stringArray      = ['test', 'hallo', 'gyselroth'];
         $mixedArrayStrInt = ['test', 1, 54, 'hey', 2342, 'eins'];
-        $mixedArrayStrSub = ['test', 'test2' =>['test3'], 'hey', 'eins', 'zwei' =>['drei']];
+        $mixedArrayStrSub = ['test', 'test2' => ['test3'], 'hey', 'eins', 'zwei' => ['drei']];
 
         $this->assertSame([], HelperArray::extractStringValues($emptyArray));
         $this->assertSame([], HelperArray::extractStringValues($intArray));
@@ -1013,7 +1016,321 @@ class HelperArrayTest extends HelperTestCase
         $this->assertSame(['test', 'hey', 'eins'], HelperArray::extractStringValues($mixedArrayStrSub));
 
     }
-    public function testResortByDate(): void {
+
+    public function testIsIterableInt(): void
+    {
+        $this->assertFalse(HelperArray::isIterable(23));
+    }
+
+    public function testIsIterableString(): void
+    {
+        $this->assertFalse(HelperArray::isIterable('test'));
+    }
+
+    public function testIsIterableArray(): void
+    {
+        $this->assertTrue(HelperArray::isIterable(['test', 234, 'testing']));
+    }
+
+    public function testResortByDateEmptyArray(): void
+    {
+        $emptyArray = [];
+        HelperArray::resortByDate($emptyArray, 1);
+        $this->assertSame([], $emptyArray);
+    }
+
+
+    // not working, update function with warning or at least output input unchanged
+    public function testResortByDateNotDate(): void
+    {
+        $notDate = ['foo', 'bar', 'baz', 'qux'];
+        HelperArray::resortByDate($notDate, 1);
+        $this->assertSame(['foo', 'bar', 'baz', 'qux'], $notDate);
+    }
+
+    public function testResortByDateOneDate(): void
+    {
+        $oneDate = ['26.09.2019'];
+
+        HelperArray::resortByDate($oneDate, 1);
+        $this->assertSame(['26.09.2019'], $oneDate);
+
+    }
+
+    public function testResortByDateTwoIdentical(): void
+    {
+        $twoIdentical = ['28.09.2019, 27.09.2019'];
+        HelperArray::resortByDate($twoIdentical, 0);
+        $this->assertSame(['26.09.2019', '26.09.2019'], $twoIdentical);
+    }
+//
+//    public function testResortByDateEmptyArray(): void {
+//        $emptyArray = [];
+//        $notDate = ['foo', 'bar', 'baz', 'qux'];
+//        $oneDate = ['26.09.2019'];
+//        $twoIdentical = ['26.09.2019','26.09.2019'];
+//        $twoDatesSorted = ['26.09.2019', '25.09.2019'];
+//        $twoDatesUnsorted = ['25.09.2019', '26.09.2019'];
+//        $threeDatesSorted = ['27.09.2019','26.09.2019', '25.09.2019'];
+//        $threeDatesUnsorted = ['25.09.2019', '27.09.2019' ,'26.09.2019'];
+//
+//        HelperArray::resortByDate($emptyArray);
+//        $this->assertSame([], $emptyArray);
+//
+//        $this->assertSame(['foo', 'bar', 'baz', 'qux'], HelperArray::resortByDate($notDate));
+//        $this->assertSame([], HelperArray::resortByDate($emptyArray));
+//        $this->assertSame([], HelperArray::resortByDate($emptyArray));
+//        $this->assertSame([], HelperArray::resortByDate($emptyArray));
+//        $this->assertSame([], HelperArray::resortByDate($emptyArray));
+//
+//
+//    }
+
+
+    // FOR ALL Sanitize functions - at least one parameter has to be true -> else error
+    public function testSanitizeEmptyArray(): void
+    {
+        $emptyArray = [];
+
+        HelperArray::Sanitize($emptyArray, true);
+        $this->assertSame([], $emptyArray);
+        HelperArray::Sanitize($emptyArray, false, true);
+        $this->assertSame([], $emptyArray);
+
+    }
+
+    public function testSanitizeNormalArray(): void
+    {
+        $normalStringArray = ['test', 'abc', 'Testing'];
+
+        HelperArray::Sanitize($normalStringArray, true);
+        $this->assertSame(['test', 'abc', 'Testing'], $normalStringArray);
+        HelperArray::Sanitize($normalStringArray, false, true);
+        $this->assertSame(['', '', ''], $normalStringArray);
+    }
+
+    public function testSanitizeUmlautArray(): void
+    {
+        $umlautStringArray = ['höflich', 'über', 'übel'];
+
+        HelperArray::Sanitize($umlautStringArray, false, true);
+        $this->assertSame(['höflich', 'über', 'übel'], $umlautStringArray);
+        HelperArray::Sanitize($umlautStringArray, true, true);
+        $this->assertSame(['höflich', 'über', 'übel'], $umlautStringArray);
+
+        // returns Array unchanged! why?
+        HelperArray::Sanitize(
+            $umlautStringArray,
+            true,
+            false,
+            false,
+            false,
+            false
+        );
+        $this->assertSame(['', '', ''], $umlautStringArray);
+    }
+
+    public function testSanitizeDigitArray(): void
+    {
+
+        $digitStringArray = ['123355', '2', '0', '234'];
+
+        HelperArray::Sanitize($digitStringArray, false, false, true);
+        $this->assertSame(['123355', '2', '0', '234'], $digitStringArray);
+        HelperArray::Sanitize($digitStringArray, true, false, false);
+        $this->assertSame(['', '', '', ''], $digitStringArray);
+    }
+
+    public function testSanitizeWhitespaceArray(): void
+    {
+
+        $whitespaceString = ["test \t hallo \n", "hey \n "];
+
+        HelperArray::Sanitize(
+            $whitespaceString,
+            true,
+            false,
+            false,
+            true
+        );
+        $this->assertSame(["test \t hallo \n", "hey \n "], $whitespaceString);
+        // array unchanged? whitespaces already in allowCharacters included??
+        HelperArray::Sanitize(
+            $whitespaceString,
+            true,
+            false,
+            true,
+            false
+        );
+        $this->assertSame(["", ""], $whitespaceString);
+        HelperArray::Sanitize(
+            $whitespaceString,
+            false,
+            false,
+            true,
+            false
+        );
+        $this->assertSame(["", ""], $whitespaceString);
+
+    }
+
+    public function testSanitizeSpaceArray(): void
+    {
+
+
+        $spaceString = ['Das ist ein Test', 'heute ist Montag'];
+
+        HelperArray::Sanitize(
+            $spaceString,
+            true,
+            false,
+            false,
+            false,
+            true
+        );
+        $this->assertSame(['Das ist ein Test', 'heute ist Montag'], $spaceString);
+        // is true? spaces already in allowCharacters included??
+        HelperArray::Sanitize(
+            $spaceString,
+            true,
+            false,
+            false,
+            false,
+            false
+        );
+        $this->assertSame(['Das ist ein Test', 'heute ist Montag'], $spaceString);
+        HelperArray::Sanitize(
+            $spaceString,
+            false,
+            true,
+            false,
+            false,
+            false);
+        $this->assertSame(['', ''], $spaceString);
+    }
+
+    public function testSanitizeMixedArray(): void
+    {
+
+        $mixedString = [
+            'Sowohl Umlaute wie ä sind auch möglich als auch Zahlen wie 4342',
+            'Wir testen hier auch mit 23 und äüö'
+        ];
+
+        HelperArray::Sanitize(
+            $mixedString,
+            true,
+            true,
+            true,
+            false,
+            false
+        );
+
+        $this->assertSame(
+            ['Sowohl Umlaute wie ä sind auch möglich als auch Zahlen wie 4342',
+                'Wir testen hier auch mit 23 und äüö'],
+            $mixedString
+        );
+
+        // somehow returns True!!!
+        HelperArray::Sanitize(
+            $mixedString,
+            true,
+            true,
+            false,
+            false,
+            false
+        );
+        $this->assertSame(['', ''], $mixedString);
+        HelperArray::Sanitize(
+            $mixedString,
+            true,
+            false,
+            false,
+            false,
+            false
+        );
+        $this->assertSame(['', ''], $mixedString);
+        HelperArray::Sanitize(
+            $mixedString,
+            false,
+            true,
+            true,
+            false,
+            false
+        );
+        $this->assertSame(['', ''], $mixedString);
+        HelperArray::Sanitize(
+            $mixedString,
+            false,
+            false,
+            true,
+            false,
+            false
+        );
+        $this->assertSame(['', ''], $mixedString);
+        HelperArray::Sanitize(
+            $mixedString,
+            false,
+            true,
+            false,
+            false,
+            false
+        );
+        $this->assertSame(['', ''], $mixedString);
+
+    }
+
+    public function testContainsSubstringTrue(): void
+    {
+        $this->assertTrue(HelperArray::containsSubstring(['test', 'abcde'], 'e'));
+        $this->assertTrue(HelperArray::containsSubstring(['test', 'abcde'], 'a', false));
+
+    }
+
+    public function testContainsSubstringFalse(): void
+    {
+        $this->assertFalse(HelperArray::containsSubstring(['test', 'abcde'], 'f'));
+        $this->assertFalse(HelperArray::containsSubstring(['test', 'abcde'], 'g', false));
+
+    }
+
+    public function testGetAssociativeKeyValues(): void
+    {
+
+        // maybe update function to ONLY store they keys - complicated output
+        // (Hint: use var_export instead of typing all your self)
+        $this->assertSame(
+            [0 =>
+                 [
+                     'key'   => 'Test',
+                     'value' =>
+                         [
+                             0 => 'abc',
+                         ],
+                 ],
+             1 =>
+                 [
+                     'key'   => 'Keys',
+                     'value' =>
+                         [
+                             0 => 'def',
+                         ],
+                 ]],
+            HelperArray::getAssociativeKeyValues(['Test' => ['abc'], 'Keys' => ['def']]));
+    }
+
+    public function testArrayMultidimensionalSortByKeyAndCheck(): void
+    {
+        $multiDimensionalArray = ['Eins'=>
+                                      ['Zwei' =>['Drei' => 'TestVier']],
+                                  'Erstens'=>
+                                      ['Zweitens'=>['Drittens'=>'testViertens']]];
+
+        $this->assertSame([], HelperArray::arrayMultidimensionalSortByKeyAndCheck(
+            $multiDimensionalArray,
+            'Zwei', 'test'));
+
 
     }
 }

@@ -482,4 +482,61 @@ class HelperStringTest extends HelperTestCase
         $this->assertSame('Plural', HelperString::translatePlural('Single', 'Plural', 0));
         $this->assertSame('Plural', HelperString::translatePlural('Single', 'Plural', 2));
     }
+
+    // FOR ALL ValidateString functions - at least one parameter has to be true -> else error
+    public function testValidateStringEmptyString(): void
+    {
+
+        $this->assertFalse(HelperString::validateString('', true));
+        $this->assertFalse(HelperString::validateString('', false, true));
+
+    }
+
+    public function testValidateStringNormalString(): void
+    {
+        $this->assertTrue(HelperString::validateString('test', true));
+        $this->assertFalse(HelperString::validateString('test', false, true));
+    }
+
+    public function testValidateStringUmlautString(): void
+    {
+        $this->assertTrue(HelperString::validateString('öüüä', false, true));
+        $this->assertTrue(HelperString::validateString('höflich', true, true));
+        $this->assertFalse(HelperString::validateString('äöüüö', true));
+    }
+
+    public function testValidateStringDigitString(): void
+    {
+        $this->assertTrue(HelperString::validateString('12321', false, false, true));
+        $this->assertFalse(HelperString::validateString('12321', true, false, false));
+    }
+    public function testValidateStringWhitespaceString(): void
+    {
+        $this->assertTrue(HelperString::validateString("test     hallo \t", true, false, false, true));
+        // is true? whitespaces already in allowCharacters included??
+        $this->assertTrue(HelperString::validateString("test \n hallo \t", true, false, true, false));
+
+    }
+    public function testValidateStringSpaceString(): void
+    {
+        $this->assertTrue(HelperString::validateString('Das ist ein Test', true, false, false, false, true));
+        // is true? spaces already in allowCharacters included??
+        $this->assertTrue(HelperString::validateString('Das ist ein Test', true, false, false,false,false));
+    }
+    public function testValidateStringMixedString(): void
+    {
+        $mixedString      = 'Sowohl Umlaute wie ä sind auch möglich als auch Zahlen wie 4342';
+
+        $this->assertTrue(HelperString::validateString($mixedString,true, true, true, false,false));
+
+        // somehow returns True!!!
+        $this->assertFalse(HelperString::validateString($mixedString,true, true, false, false,false));
+        $this->assertFalse(HelperString::validateString($mixedString,true, false, false, false,false));
+        $this->assertFalse(HelperString::validateString($mixedString,false, true, true, false,false));
+        $this->assertFalse(HelperString::validateString($mixedString,false, false, true, false,false));
+        $this->assertFalse(HelperString::validateString($mixedString,false, true, false, false,false));
+
+
+    }
+
 }
